@@ -1,98 +1,104 @@
+-- Geração de Modelo físico
+-- Sql ANSI 2003 - brModelo.
+
+
+
 CREATE TABLE FOTOS (
-fto_legenda varchar2(10),
-fto_extensao varchar2(10),
-fto_nome varchar2(10),
-fto_caminho varchar2(10),
-pk_fto_id varchar2(10),
-fk_fto_prd number(6)
-)
-
-CREATE TABLE PRODUTOS (
-prd_nome varchar2(10),
-prd_url varchar2(10),
-prd_marca varchar2(10),
-prd_descricao varchar2(10),
-prd_modelo varchar2(10),
-prd_preco varchar2(10),
-pk_prd_id varchar2(10)
-)
-
-CREATE TABLE DESCONTOS (
-dct_porcentagem varchar2(10),
-dct_valor varchar2(10),
-pk_dct_id varchar2(10),
-fk_dct_prd number(6)
-)
-
-CREATE TABLE COMENTARIOS (
-com_descricao varchar2(10),
-com_datacriacao varchar2(10),
-pk_com_id varchar2(10),
-fk_com_prd varchar2(10)
-)
-
-CREATE TABLE ITENSPEDIDO (
-ipd_quantidade varchar2(10),
-pk_ipd_id varchar2(10),
-fk_ipd_prd varchar2(10),
-fk_ipd_car number(6)
-)
-
-CREATE TABLE CARTAOS (
-crt_numero varchar2(10),
-crt_bandeira varchar2(10),
-crt_codigoseguranca varchar2(10),
-pk_crt_id varchar2(10),
-fk_crt_usu number(6)
-)
-
-CREATE TABLE USUARIOS (
-usu_login varchar2(10),
-usu_senha varchar2(10),
-pk_usu_id varchar2(10),
-fk_usu_cli number(6)
-)
-
-CREATE TABLE CARRINHOS (
-pk_car_id number(6),
-fk_car_usu number(6)
-)
-
-CREATE TABLE CLIENTES (
-pk_cli_id number(6),
-cli_primeironome number(6),
-cli_nomemeio number(6),
-cli_ultimonome number(6),
-cli_email number(6),
-cli_cpf number(6)
-)
-
-CREATE TABLE ENDERECOS (
-pk_end_id number(6),
-fk_end_cli number(6),
-end_logradouro number(6),
-end_numero number(6),
-end_bairro number(6),
-end_cidade number(6),
-end_estado number(6),
-end_pais number(6),
-end_cep number(6)
+pk_fto_id NUMERIC(6) PRIMARY KEY,
+fto_extensao VARCHAR(4),
+fto_caminho VARCHAR(255),
+fto_nome VARCHAR(15),
+fto_legenda VARCHAR(255),
+pk_prd_id NUMERIC(6)
 )
 
 CREATE TABLE TELEFONES (
-tel_codoperadora varchar2(10),
-tel_ddd varchar2(10),
-tel_numero varchar2(10),
-tel_descricao varchar2(10),
-pk_tel_id varchar2(10),
-fk_tel_cli varchar2(10)
+tel_ddd CHAR(2),
+tel_descricao VARCHAR(30),
+tel_numero CHAR(9),
+tel_codoperadora CHAR(2),
+pk_tel_id NUMERIC(6) PRIMARY KEY,
+pk_cli_id NUMERIC(6)
+)
+
+CREATE TABLE ITENSPEDIDO (
+ipd_quantidade NUMERIC(8),
+pk_ipd_id NUMERIC(6) PRIMARY KEY,
+pk_usu_id NUMERIC(6),
+pk_prd_id NUMERIC(6),
+pk_vnd_id NUMERIC(6)
+)
+
+CREATE TABLE USUARIOS+CLIENTES (
+pk_cli_id NUMERIC(6) PRIMARY KEY,
+usu_login VARCHAR(20),
+usu_senha VARCHAR(20),
+cli_cpf CHAR(11),
+cli_nomemeio VARCHAR(30),
+cli_email VARCHAR(10),
+cli_primeironome VARCHAR(15),
+cli_ultimonome VARCHAR(15)
+)
+
+CREATE TABLE COMENTARIOS (
+com_descricao VARCHAR(255),
+com_datacriacao DATETIME,
+pk_com_id NUMERIC(6) PRIMARY KEY,
+pk_prd_id NUMERIC(6),
+pk_usu_id NUMERIC(6),
+FOREIGN KEY(pk_usu_id) REFERENCES USUARIOS+CLIENTES (pk_cli_id)
+)
+
+CREATE TABLE DESCONTOS+PRODUTOS (
+pk_prd_id NUMERIC(6) PRIMARY KEY,
+dct_valor NUMERIC(8,2),
+dct_porcentagem NUMERIC(4,2),
+prd_preco NUMERIC(8,2),
+prd_marca VARCHAR(30),
+prd_descricao VARCHAR(255),
+prd_nome VARCHAR(30),
+prd_modelo VARCHAR(30),
+prd_url VARCHAR(30)
+)
+
+CREATE TABLE ENDERECOS (
+end_estado CHAR(2),
+end_pais VARCHAR(15),
+end_cidade VARCHAR(15),
+end_logradouro VARCHAR(20),
+end_cep CHAR(8),
+end_bairro VARCHAR(15),
+end_numero VARCHAR(5),
+pk_end_id NUMERIC(6) PRIMARY KEY,
+pk_cli_id NUMERIC(6),
+FOREIGN KEY(pk_cli_id) REFERENCES USUARIOS+CLIENTES (pk_cli_id)
 )
 
 CREATE TABLE VENDAS (
-vnd_notafiscal varchar2(10),
-vnd_formapagamento varchar2(10),
-vnd_total varchar2(10),
-pk_vnd_id number(6),
-fk_vnd_car number(6)
+vnd_total NUMERIC(8,2),
+pk_vnd_id NUMERIC(6) PRIMARY KEY,
+vnd_notafiscal VARCHAR(20),
+vnd_formapagamento VARCHAR(20),
+pk_end_id NUMERIC(6),
+pk_usu_id NUMERIC(6),
+pk_cli_id NUMERIC(6),
+FOREIGN KEY(pk_end_id) REFERENCES ENDERECOS (pk_end_id),
+FOREIGN KEY(pk_usu_id) REFERENCES USUARIOS+CLIENTES (pk_cli_id),
+FOREIGN KEY(pk_cli_id) REFERENCES USUARIOS+CLIENTES (pk_cli_id)
 )
 
+CREATE TABLE CARTAOS (
+crt_numero CHAR(16),
+crt_bandeira VARCHAR(10),
+pk_crt_id NUMERIC(6) PRIMARY KEY,
+crt_codigoseguranca CHAR(3),
+pk_cli_id NUMERIC(6),
+FOREIGN KEY(pk_cli_id) REFERENCES USUARIOS+CLIENTES (pk_cli_id)
+)
+
+ALTER TABLE FOTOS ADD FOREIGN KEY(pk_prd_id) REFERENCES DESCONTOS+PRODUTOS (pk_prd_id)
+ALTER TABLE TELEFONES ADD FOREIGN KEY(pk_cli_id) REFERENCES USUARIOS+CLIENTES (pk_cli_id)
+ALTER TABLE ITENSPEDIDO ADD FOREIGN KEY(pk_usu_id) REFERENCES USUARIOS+CLIENTES (pk_cli_id)
+ALTER TABLE ITENSPEDIDO ADD FOREIGN KEY(pk_prd_id) REFERENCES DESCONTOS+PRODUTOS (pk_prd_id)
+ALTER TABLE ITENSPEDIDO ADD FOREIGN KEY(pk_vnd_id) REFERENCES VENDAS (pk_vnd_id)
+ALTER TABLE COMENTARIOS ADD FOREIGN KEY(pk_prd_id) REFERENCES DESCONTOS+PRODUTOS (pk_prd_id)
