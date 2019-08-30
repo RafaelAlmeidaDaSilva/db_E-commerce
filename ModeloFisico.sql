@@ -1,5 +1,3 @@
--- Geração de Modelo físico
--- Sql ANSI 2003 - brModelo.
 
 
 
